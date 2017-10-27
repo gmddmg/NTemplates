@@ -4,6 +4,7 @@ using NTemplates.DocumentStructure;
 using NTemplates.DocumentFormat;
 using NTemplates.EventArgs;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace NTemplates
 {
@@ -18,7 +19,7 @@ namespace NTemplates
         NONE
     }
 
-    public enum eTextFormat { RTF, Text }
+    public enum ETextFormat { RTF, Text }
 
     public class Parser
     {
@@ -29,48 +30,50 @@ namespace NTemplates
         private MatchCollection matchCollection;
         private OutputNode rootOutputNode;
         private DataManager dataManager;
+        private bool _preprocessText;
         internal string KeywordsRegExString;
         internal string FunctionsRegexString;
         IDocumentFormat idFmt;
-
         #endregion
-                
+
         #region Constants
 
-        internal static string _d = "#";
+        public string _d { get; private set; }
 
-        internal static string _identif = @"[a-z]([a-z]*[0-9]*)*";
+        internal string _identif = @"[a-z]([a-z]*[0-9]*)*";
         //Construction Blocks
-        internal static string _scan = _d + @"SCAN\(" + _identif + @"\)" + _d;
+        internal string _scan => _d + @"SCAN\(" + _identif + @"\)" + _d;
 
         //Not used in the current version
-        internal static string _count = @"COUNT\(" + _identif + @"\)";
+        internal string _count => @"COUNT\(" + _identif + @"\)";
         //Not used in the current version
-        internal static string _sum = @"SUM\(" + _identif + @"\)";
+        internal string _sum => @"SUM\(" + _identif + @"\)";
 
-        internal static string _endscan = _d + @"ENDSCAN" + _d; 
+        internal string _endscan => _d + @"ENDSCAN" + _d; 
         
-        internal static string _scanfor = _d + @"SCAN\(" + _identif + @"\)\s*FOR\s*\(.+?\)" + _d;
-        internal static string _if = _d + @"IF\s*\(.+?\)"+_d;
-        internal static string _else = _d + @"ELSE" + _d;
-        internal static string _endif = _d + @"ENDIF" + _d;
+        internal string _scanfor => _d + @"SCAN\(" + _identif + @"\)\s*FOR\s*\(.+?\)" + _d;
+        internal string _if => _d + @"IF\s*\(.+?\)"+_d;
+        internal string _else => _d + @"ELSE" + _d;
+        internal string _endif => _d + @"ENDIF" + _d;
 
         //Page Break command
-        internal static string _pgbrk = _d + "PAGE_BRK" + _d;
+        internal string _pgbrk => _d + "PAGE_BRK" + _d;
 
         //Functions
-        internal static string _dtfmt = _d + @"Dtfmt\s*\(.+?\)" + _d; //Function "Date Format";    
+        internal string _dtfmt => _d + @"Dtfmt\s*\(.+?\)" + _d; //Function "Date Format";    
 
-        internal static string _dbfmt = _d + @"Dbfmt\s*\(.+?\)" + _d; //Function "Double Format";    //internal static string _dbfmt = _d + @"Dbfmt\s*\(([0-9]|.)+?\)" + _d; //Function "Double Format";
+        internal string _dbfmt => _d + @"Dbfmt\s*\(.+?\)" + _d; //Function "Double Format";    //internal static string _dbfmt = _d + @"Dbfmt\s*\(([0-9]|.)+?\)" + _d; //Function "Double Format";
 
-        internal static string _hlnk = _d + @"Hlnk\s*\(.+?\)" + _d; //Function "Hyperlink"
+        internal string _hlnk => _d + @"Hlnk\s*\(.+?\)" + _d; //Function "Hyperlink"
 
         #endregion
 
-        internal Parser(eTextFormat format)
+        internal Parser(ETextFormat format, string delimiter = "#", bool preprocessText = true)
         {
+            _preprocessText = preprocessText;
+            _d = delimiter;
             TextFormat = format;
-            DataManager = new DataManager();
+            DataManager = new DataManager(this);
            
             KeywordsRegExString =  @"\b*(" + _scan + "|"
                             + _endscan + "|"
@@ -83,7 +86,7 @@ namespace NTemplates
             FunctionsRegexString = @"\b*(" + _dtfmt + "|" + _dbfmt + "|" + _hlnk + ")\\b*";
         }
 
-        public eTextFormat TextFormat
+        public ETextFormat TextFormat
         {
             get;
             set;
@@ -146,40 +149,6 @@ namespace NTemplates
             return cond.Substring(ob + 1, le);
         }
 
-        //internal async Task<string> ParseAsync(string text)
-        //{
-        //    DataManager.ResetRecordPositions();
-
-        //    RTFInput = CleanPlaceHolders(text);
-
-        //    //Set the starting point for the recursive process    
-        //    rootOutputNode = new OutputNode();
-        //    CurrentOutputNode = rootOutputNode;
-
-        //    GetControlBlocks();
-        //    documentNode.Expand();
-
-        //    //Generate the ouput!!
-        //    StringBuilder rootText = rootOutputNode.Text;
-        //    if (rootText != null)
-        //        RTFOutput = rootOutputNode.Text.ToString().Trim();
-        //    else
-        //        RTFOutput = "";
-
-        //    foreach (OutputNode child in rootOutputNode.Children)
-        //    {
-        //        RTFOutput += child.GetFullText().ToString().Trim();
-        //    }
-
-
-
-
-        //    return RTFOutput;
-        //}
-
-
-
-
         /// <summary>
         /// Replaces any occurrence within any of the placeholders of the character “ with "
         /// </summary>
@@ -197,7 +166,6 @@ namespace NTemplates
 
             Regex regex = CommonMethods.GetRegex(KeywordsRegExString);
             matchCollection = regex.Matches(RTFInput.ToString());
-
             #region Set up the document's root
 
             documentNode = new TextBlock(true);
@@ -253,13 +221,14 @@ namespace NTemplates
                         }
                     case KeyWords.IF:
                         {
+                 
                             //Closes the Texblok immediately before this if
                             if (!currentNode.IsRoot)
                             {
                                 currentNode = CloseControlBlock(currentNode, match);
                             }
 
-                            IControlBlock ifBlock = new IfBlock(match,this);
+                            IControlBlock ifBlock = new IfBlock(match, this);
                             ifBlock.OpenRegEx = match;
                             ifBlock.MatchStart = match.Index;
                             ifBlock.Start = match.Index + match.Length;
@@ -269,7 +238,6 @@ namespace NTemplates
 
                             //Create a new TextBlock for the "true" part of the if
                             currentNode = CreateTextBlock(match, ifBlock);
-
                             break;
                         }
                     case KeyWords.ELSE:
@@ -296,7 +264,6 @@ namespace NTemplates
                                 //It's the end of the document, close the textblock right here
                                 currentNode = CloseControlBlock(currentNode);
                             }
-
                             break;
                         }
                     case KeyWords.ENDSCAN:
@@ -365,8 +332,10 @@ namespace NTemplates
         /// </summary>
         private void PreprocessText()
         {
+            if (!_preprocessText)
+                return;
             //Check to see if must work with RTF or plain text format.
-            idFmt = TextFormat == eTextFormat.Text ? (IDocumentFormat)new TextFormat() : (IDocumentFormat)new RTFFormat();
+            idFmt = TextFormat == ETextFormat.Text ? (IDocumentFormat)new TextFormat() : (IDocumentFormat)new RTFFormat();
 
             //Get Matches for any possible placeholder
             Regex regex0 = CommonMethods.GetRegex(KeywordsRegExString);

@@ -12,6 +12,18 @@ namespace ProductList
     {
 
         List<Product> products = new List<Product>();
+        private string _inputPath = @"..\..\Templates\ProductListSample.rtf";
+        private string _outputPath = @"..\..\Templates\ProductList.rtf";
+        private string _descriptionPath = @"..\..\ExampleDescription.txt";
+
+        private bool _isUnitTest = false;
+        public ProductList(string inputPath, string outputPath, string descriptionPath) : this()
+        {
+            _isUnitTest = true;
+            _inputPath = inputPath;
+            _outputPath = outputPath;
+            _descriptionPath = descriptionPath;
+        }
 
         public ProductList()
         {
@@ -56,7 +68,7 @@ namespace ProductList
             
         }
 
-        private void btnProductList_Click(object sender, EventArgs e)
+        public void BtnProductList_Click(object sender, EventArgs e)
         {            
             DocumentCreator dc = new DocumentCreator();
             dc.AddList<Product>(products, "P");
@@ -64,16 +76,16 @@ namespace ProductList
             dc.AddInt32("unavailable", 0);
             dc.AddInt32("total", 0);
 
-            dc.AfterScanRecord += new AfterScanRecordEventHandler(dc_AfterScanRecord1);
-            dc.ScanEnded += new ScanEndedEventHandler(dc_ScanEnded1);
-            string outputpath = @"..\..\Templates\ProductList.rtf";
+            dc.AfterScanRecord += new AfterScanRecordEventHandler(Dc_AfterScanRecord1);
+            dc.ScanEnded += new ScanEndedEventHandler(Dc_ScanEnded1);
 
-            dc.CreateDocument(@"..\..\Templates\ProductListSample.rtf", outputpath);
+            dc.CreateDocument(_inputPath, _outputPath);
 
-            Process.Start(outputpath);
+            if(!_isUnitTest)
+            Process.Start(_outputPath);
         }
 
-        void dc_ScanEnded1(object sender, ScanEndedEventArgs e)
+        void Dc_ScanEnded1(object sender, ScanEndedEventArgs e)
         {
             if (e.TableName == "P")
             {
@@ -84,7 +96,7 @@ namespace ProductList
             }
         }
 
-        private void dc_AfterScanRecord1(object sender, AfterScanRecordEventArgs e)
+        private void Dc_AfterScanRecord1(object sender, AfterScanRecordEventArgs e)
         {
             if (e.TableName == "P")
             {
@@ -101,9 +113,9 @@ namespace ProductList
             }
         }
 
-        private void ProductList_Load(object sender, EventArgs e)
+        public void ProductList_Load(object sender, EventArgs e)
         {
-            string descFile = File.ReadAllText(@"..\..\ExampleDescription.txt");
+            string descFile = File.ReadAllText(_descriptionPath);
             txtDescription.Text = descFile;
         }
         

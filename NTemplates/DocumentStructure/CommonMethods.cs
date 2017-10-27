@@ -13,6 +13,11 @@ namespace NTemplates.DocumentStructure
             _parser = p;
         }
 
+        internal string Prepare(string placeholder)
+        {
+            return _parser._d + placeholder + _parser._d;
+        }
+
         /// <summary>
         /// Should move this to the "Control" classes hierarchy.
         /// </summary>
@@ -32,7 +37,7 @@ namespace NTemplates.DocumentStructure
                 }
                 return GetReplacementsForFunctions(textAux);
             }
-            catch (Exception ex)
+            catch
             {
                 return null;
             }
@@ -40,7 +45,7 @@ namespace NTemplates.DocumentStructure
         
         internal string GetReplacementsForFunctions(string text)
         {
-            Regex funcs = CommonMethods.GetRegex(_parser.FunctionsRegexString);
+            Regex funcs = GetRegex(_parser.FunctionsRegexString);
             MatchCollection matches = funcs.Matches(text);
             string matchString;
             FunctionsEvaluator FEvaluator = new FunctionsEvaluator();
@@ -49,35 +54,31 @@ namespace NTemplates.DocumentStructure
             {
                 matchString = m.ToString();
 
-                if (Regex.Matches(matchString, Parser._dtfmt).Count > 0) 
+                if (Regex.Matches(matchString, _parser._dtfmt).Count > 0) 
                 {
                     //DateTimeFormat
                     text = text.Replace(m.ToString(), FEvaluator.Format(matchString, this._parser.DataManager, TemplateFunctions.DateFormat));
                 }
                 else
                 {
-                    if (Regex.Matches(matchString, Parser._dbfmt).Count > 0) 
+                    if (Regex.Matches(matchString, _parser._dbfmt).Count > 0) 
                     {
                         //DoubleFormat
-                        text = text.Replace(m.ToString(), FEvaluator.Format(matchString, this._parser.DataManager, TemplateFunctions.DoubleFormat));
+                        text = text.Replace(m.ToString(), FEvaluator.Format(matchString, _parser.DataManager, TemplateFunctions.DoubleFormat));
                     }
                     else
                     {
-                        if (Regex.Matches(matchString, Parser._hlnk).Count > 0) 
+                        if (Regex.Matches(matchString, _parser._hlnk).Count > 0) 
                         {
                             //Hyperlink
-                            text = text.Replace(m.ToString(), FEvaluator.Hyperlink(matchString, this._parser.DataManager));
+                            text = text.Replace(m.ToString(), FEvaluator.Hyperlink(matchString, _parser.DataManager));
                         }
                     }
                 }
             }
             return text.Trim();
         }
-        
-        internal static string Prepare(string placeholder)
-        {
-            return Parser._d + placeholder + Parser._d;
-        }
+
 
         internal static Regex GetRegex(string text)
         {

@@ -48,7 +48,7 @@
             this.btnProductList.TabIndex = 0;
             this.btnProductList.Text = "Print";
             this.btnProductList.UseVisualStyleBackColor = true;
-            this.btnProductList.Click += new System.EventHandler(this.btnProductList_Click);
+            this.btnProductList.Click += new System.EventHandler(this.BtnProductList_Click);
             // 
             // dgvProducts
             // 

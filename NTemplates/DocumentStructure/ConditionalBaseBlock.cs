@@ -48,7 +48,7 @@ namespace NTemplates.DocumentStructure
                 List<object> parameters = new List<object>();
                 foreach (string ph in placeHolders)
                 {
-                    string placeholder = ph.Replace(Parser._d, "");
+                    string placeholder = ph.Replace(_documentParser._d, "");
                     if (Condition.Contains(placeholder))
                     {
                         object parameter = DocumentParser.DataManager.GetCurrentValueForPlaceHolderObject(placeholder, false);

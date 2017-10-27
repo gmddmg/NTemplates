@@ -94,7 +94,7 @@ namespace NTemplates.DocumentStructure
 
         private void InitializeFromMatch(Match start, bool hasCondition)
         {
-            string regex = start.ToString().Replace(Parser._d, "");
+            string regex = start.ToString().Replace(DocumentParser._d, "");
 
             string nameSubstring;
             if (hasCondition)

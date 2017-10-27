@@ -1,6 +1,6 @@
 ﻿namespace LetterExample
 {
-    partial class Form1
+    partial class LetterExample
     {
         /// <summary>
         /// Required designer variable.
@@ -39,7 +39,7 @@
             this.btnGenerateLetter.TabIndex = 0;
             this.btnGenerateLetter.Text = "Generate letter";
             this.btnGenerateLetter.UseVisualStyleBackColor = true;
-            this.btnGenerateLetter.Click += new System.EventHandler(this.btnGenerateLetter_Click);
+            this.btnGenerateLetter.Click += new System.EventHandler(this.BtnGenerateLetter_Click);
             // 
             // Form1
             // 

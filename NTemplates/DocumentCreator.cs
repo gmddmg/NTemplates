@@ -30,10 +30,20 @@ namespace NTemplates
         public event ScanEndedEventHandler ScanEnded;
 
 
+        public DocumentCreator(string delimiter, bool preprocessText)
+        {
+            parser = new Parser(ETextFormat.RTF,delimiter,preprocessText)
+            {
+                Creator = this
+            };
+        }
+
         public DocumentCreator()
         {
-            parser = new Parser(eTextFormat.RTF);
-            parser.Creator = this;
+            parser = new Parser(ETextFormat.RTF)
+            {
+                Creator = this
+            };
         }
 
         #region Table and variables handling
@@ -295,29 +305,25 @@ namespace NTemplates
 
         internal void RaiseScanStartEvent(ScanStartEventArgs e)
         {
-            if (ScanStart != null)
-                ScanStart(this, e);
+            ScanStart?.Invoke(this, e);
         }
 
 
         internal void RaiseBeforeScanRecordEvent(BeforeScanRecordEventArgs e)
         {
-            if (BeforeScanRecord != null)
-                BeforeScanRecord(this, e);
+            BeforeScanRecord?.Invoke(this, e);
         }
 
         internal void RaiseAfterScanRecordEvent(AfterScanRecordEventArgs e)
         {
-            if (AfterScanRecord != null)
-                AfterScanRecord(this, e);
+            AfterScanRecord?.Invoke(this, e);
         }
 
 
 
         internal void RaiseScanEndedEvent(ScanEndedEventArgs e)
         {
-            if (ScanEnded != null)
-                ScanEnded(this, e);
+            ScanEnded?.Invoke(this, e);
         }
 
         #endregion

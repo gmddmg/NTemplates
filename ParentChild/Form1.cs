@@ -13,14 +13,23 @@ namespace ParentChild
 {
     public partial class Form1 : Form
     {
+        private bool _unitTest = false;
+        private string _inputPath = @"..\..\Templates\ParentChildSample.rtf";
+        private string _outputPath = @"..\..\Templates\ParentChild.rtf";
+
         public Form1()
         {
             InitializeComponent();
         }
+        
+        public Form1(string inputPath, string outputPath) : this ()
+        {
+            _inputPath = inputPath;
+            _outputPath = outputPath;
+            _unitTest = true;
+        }
 
-        private const string _inputPath = @"..\..\Templates\ParentChildSample.rtf";
-        private const string _outputPath = @"..\..\Templates\ParentChild.rtf";
-        private void button1_Click(object sender, EventArgs e)
+        public void Button1_Click(object sender, EventArgs e)
         {
             DataTable Parent = new DataTable("P"); 
             Parent.Columns.Add(new DataColumn("id", typeof(int))); 
@@ -53,16 +62,18 @@ namespace ParentChild
             GrandChild.Rows.Add(new object[] { "3", "1", "Parent 1 Child 1 Grand Child 3" });
 
             DocumentCreator dc = new DocumentCreator();
-            dc.ScanStart += new ScanStartEventHandler(dc_ScanStart);
+            dc.ScanStart += new ScanStartEventHandler(Dc_ScanStart);
             dc.AddDataTable(Parent);
             dc.AddDataTable(Child);
             dc.AddDataTable(GrandChild);
             dc.CreateDocument(_inputPath, _outputPath);
+
+            if (!_unitTest)
             Process.Start(_outputPath);
 
         }
 
-        void dc_ScanStart(object sender, NTemplates.EventArgs.ScanStartEventArgs e)
+        void Dc_ScanStart(object sender, NTemplates.EventArgs.ScanStartEventArgs e)
         {
             
         }

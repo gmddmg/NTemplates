@@ -18,7 +18,7 @@ namespace NTemplates
             //Get a list with the needed information of the parameters involved in the expression.
             List<MethodArgument> parameters = GetParameters(expression, mgr);
             //Instantiate a code compiler and set some attributes on it
-            ICodeCompiler comp = (new CSharpCodeProvider().CreateCompiler());
+            CodeDomProvider comp = CodeDomProvider.CreateProvider("CSharp");
             CompilerParameters cp = new CompilerParameters();
             cp.ReferencedAssemblies.Add("system.dll");
             cp.GenerateExecutable = false;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace ProductList
+namespace ProductListNestedScans
 {
     static class Program
     {
@@ -15,7 +15,7 @@ namespace ProductList
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ProductList());
+            Application.Run(new ProductListNestedScans());
         }
     }
 }

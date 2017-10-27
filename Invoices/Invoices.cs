@@ -22,12 +22,23 @@ namespace Invoices
         private const string _total = "total";
         private const string _extprice = "extPrice";
 
-        private const string _inputPath = @"..\..\Templates\InvoiceSample.rtf";
-        private const string _outputPath = @"..\..\Templates\Invoice.rtf";
+        private string _inputPath = @"..\..\Templates\InvoiceSample.rtf";
+        private string _outputPath = @"..\..\Templates\Invoice.rtf";
+
+        private string _exampleDescriptionPath = @"..\..\ExampleDescription.txt";
+        private bool _unitTest = false;
 
         public Invoices()
         {
             InitializeComponent();
+        }
+
+        public Invoices(string inputPath, string outputPath, string exampleDescriptionPath) : this()
+        {
+            _inputPath = Path.GetFullPath(inputPath);
+            _outputPath = Path.GetFullPath(outputPath);
+            _exampleDescriptionPath = Path.GetFullPath(exampleDescriptionPath);
+            _unitTest = true;
         }
 
         /// <summary>
@@ -72,7 +83,7 @@ namespace Invoices
             return dataset;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        public void Button1_Click(object sender, EventArgs e)
         {
             try
             {
@@ -88,8 +99,8 @@ namespace Invoices
                     dc.AddDataTable(dt);
 
                 //We'are handling some events, so we need to define some event handlers
-                dc.BeforeScanRecord += new BeforeScanRecordEventHandler(dc_BeforeScanRecord);
-                dc.ScanEnded += new ScanEndedEventHandler(dc_ScanEnded);
+                dc.BeforeScanRecord += new BeforeScanRecordEventHandler(Dc_BeforeScanRecord);
+                dc.ScanEnded += new ScanEndedEventHandler(Dc_ScanEnded);
 
                 //By calling the Add<Type> methods of DocumentCreator, we add variables to the 
                 //document creator memory space. We can use those for showing values in the report
@@ -108,9 +119,7 @@ namespace Invoices
                 //to a physical file too.
 
                 dc.CreateDocument(_inputPath, _outputPath);
-
-        
-
+                if (!_unitTest)
                 System.Diagnostics.Process.Start(_outputPath);
 
             }
@@ -120,7 +129,7 @@ namespace Invoices
             }
         }
 
-        void dc_BeforeScanRecord(object sender, BeforeScanRecordEventArgs e)
+        void Dc_BeforeScanRecord(object sender, BeforeScanRecordEventArgs e)
         {
             if (e.TableName == "L" && //The invoice lines are being scanned
                 e.MatchesScanCondition) //and the current record matches the scan condition
@@ -143,7 +152,7 @@ namespace Invoices
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void dc_ScanEnded(object sender, ScanEndedEventArgs e)
+        void Dc_ScanEnded(object sender, ScanEndedEventArgs e)
         {
             //Make sure the loop corresponds to the "Invoice Lines" table.
             //NTemplates raises an event for each scan loop and we need to be sure we're working 
@@ -158,9 +167,9 @@ namespace Invoices
             }
         }
 
-        private void Invoices_Load(object sender, EventArgs e)
+        public void Invoices_Load(object sender, EventArgs e)
         {
-            string descFile = File.ReadAllText(@"..\..\ExampleDescription.txt");
+            string descFile = File.ReadAllText(_exampleDescriptionPath);
             txtDescription.Text = descFile;
         }
 

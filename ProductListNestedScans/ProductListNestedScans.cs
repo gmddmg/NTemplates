@@ -6,14 +6,29 @@ using NTemplates.EventArgs;
 using System.Diagnostics;
 using System.IO;
 
-namespace ProductList
+namespace ProductListNestedScans
 {
-    public partial class ProductList : Form
+    public partial class ProductListNestedScans : Form
     {
         List<Vendor> vendors = new List<Vendor>();
         List<Product> products = new List<Product>();
 
-        public ProductList()
+        private string _inputPath = @"..\..\Templates\ProductListWithGroupingsSample.rtf";
+        private string _outputPath = @"..\..\Templates\ProductList.rtf";
+        private string _descriptionPath = @"..\..\ExampleDescription.txt";
+
+        public bool _unitTest = false;
+
+        public ProductListNestedScans(string inputPath, string outputPath, string descriptionPath) : this()
+        {
+            _inputPath = Path.GetFullPath(inputPath);
+            _outputPath = Path.GetFullPath(outputPath);
+            _descriptionPath = Path.GetFullPath(descriptionPath);
+            _unitTest = true;
+        }
+
+
+        public ProductListNestedScans()
         {
             InitializeComponent();
 
@@ -65,7 +80,7 @@ namespace ProductList
 
         }
 
-        private void btnProductList_Click(object sender, EventArgs e)
+        public void BtnProductList_Click(object sender, EventArgs e)
         {            
             DocumentCreator dc = new DocumentCreator();
             dc.AddList<Vendor>(vendors, "vendor");
@@ -82,15 +97,16 @@ namespace ProductList
             dc.AddInt32("total", 0);
 
 
-            dc.ScanStart +=new ScanStartEventHandler(dc_ScanStart);
-            dc.AfterScanRecord += new AfterScanRecordEventHandler(dc_AfterScanRecord1);
-            dc.ScanEnded += new ScanEndedEventHandler(dc_ScanEnded1);
-            string outputpath = @"..\..\Templates\ProductList.rtf";
-            dc.CreateDocument(@"..\..\Templates\ProductListWithGroupingsSample.rtf", outputpath);
-            Process.Start(outputpath);
+            dc.ScanStart +=new ScanStartEventHandler(Dc_ScanStart);
+            dc.AfterScanRecord += new AfterScanRecordEventHandler(Dc_AfterScanRecord1);
+            dc.ScanEnded += new ScanEndedEventHandler(Dc_ScanEnded1);
+            dc.CreateDocument(_inputPath, _outputPath);
+
+            if (!_unitTest)
+            Process.Start(_outputPath);
         }
 
-        void dc_ScanStart(object sender, ScanStartEventArgs e)
+        void Dc_ScanStart(object sender, ScanStartEventArgs e)
         {
             if (e.TableName == "prod")
             {
@@ -101,8 +117,7 @@ namespace ProductList
             }
         }
 
-
-        void dc_ScanEnded1(object sender, ScanEndedEventArgs e)
+        void Dc_ScanEnded1(object sender, ScanEndedEventArgs e)
         {
             if (e.TableName == "prod")
             {
@@ -113,7 +128,7 @@ namespace ProductList
             }
         }
 
-        private void dc_AfterScanRecord1(object sender, AfterScanRecordEventArgs e)
+        private void Dc_AfterScanRecord1(object sender, AfterScanRecordEventArgs e)
         {
 
             if (e.TableName == "prod" && e.MatchesScanCondition)
@@ -145,9 +160,9 @@ namespace ProductList
             }
         }
 
-        private void ProductList_Load(object sender, EventArgs e)
+        public void ProductList_Load(object sender, EventArgs e)
         {
-            string descFile = File.ReadAllText(@"..\..\ExampleDescription.txt");
+            string descFile = File.ReadAllText(_descriptionPath);
             txtDescription.Text = descFile;
         }
 

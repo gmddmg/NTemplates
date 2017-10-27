@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -109,11 +110,19 @@ namespace NTemplates.DocumentStructure
         public void Expand()
         {
             if (MatchesCondition())
-                Children[0].Expand(); //Expands true part
+            {
+                var takeUpTo = Children.Exists(x => x.OpenRegEx.Value.Contains("ELSE")) 
+                    ? Children.IndexOf(Children.First(x => x.OpenRegEx.Value.Contains("ELSE"))) : 
+                    Children.Count;
+
+                Children.Take(takeUpTo).ToList().ForEach(x => x.Expand());
+            }
             else
             {
-                if (Children.Count == 2) //If has 'else'
-                    Children[1].Expand();   //Expands the false part
+                if (Children.Exists(x => x.OpenRegEx.Value.Contains("ELSE")))
+                Children.Skip(Children.IndexOf(Children.First(x => x.OpenRegEx.Value.Contains("ELSE"))))
+                    .ToList()
+                    .ForEach(x => x.Expand());
             }
         }
 

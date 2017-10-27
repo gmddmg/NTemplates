@@ -21,7 +21,11 @@ namespace NTemplates
         Dictionary<string, String> stringVariables = new Dictionary<string, String>();
         Dictionary<string, DateTime> dateTimeVariables = new Dictionary<string, DateTime>();
         Dictionary<string, Image> imageVariables = new Dictionary<string, Image>();
-
+        public Parser Parser { get; private set; }
+        public DataManager(Parser parser)
+        {
+            Parser = parser;
+        }
         internal Dictionary<string, string> VariablesMap
         {
             get
@@ -80,7 +84,7 @@ namespace NTemplates
                     string sufix = column.ColumnName;
                     if (enclose)
                     {
-                        result.Add(CommonMethods.Prepare(prefix + sufix));
+                        result.Add(new CommonMethods(Parser).Prepare(prefix + sufix));
                     }
                     else
                         result.Add(prefix + sufix);
@@ -100,7 +104,7 @@ namespace NTemplates
 
         internal List<string> GetPlaceholdersForVariables()
         {
-            return variableMap.Keys.Select(var => CommonMethods.Prepare(var)).ToList<string>();
+            return variableMap.Keys.Select(var => new CommonMethods(Parser).Prepare(var)).ToList<string>();
         }
 
         internal string GetCurrentValueForPlaceHolder(string field)

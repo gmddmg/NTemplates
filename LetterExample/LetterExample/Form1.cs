@@ -1,18 +1,34 @@
 ﻿using NTemplates;
 using System;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace LetterExample
 {
-    public partial class Form1 : Form
+    public partial class LetterExample : Form
     {
-        public Form1()
+
+        private string _inputPath = @"../../Documents/letterTemplate.rtf";
+        private string _outputPath = Path.GetFullPath(@"../../Documents/generatedLetter.rtf");
+        private string _logoPath = @"../../Documents/rocksolidlogo.JPG";
+        private bool _unitTest = false;
+        private string _letterDate = DateTime.Today.ToShortDateString();
+        public LetterExample()
         {
             InitializeComponent();
         }
 
-        private void btnGenerateLetter_Click(object sender, EventArgs e)
+        public LetterExample(string inputPath, string outputPath, string logoPath, string letterDate) :this()
+        {
+            _inputPath = Path.GetFullPath(inputPath);
+            _outputPath = Path.GetFullPath(outputPath);
+            _logoPath = Path.GetFullPath(logoPath);
+            _unitTest = true;
+            _letterDate = letterDate;
+        }
+        public void BtnGenerateLetter_Click(object sender, EventArgs e)
         {
             //First, we need an instance of the DocumentCreator class.
             DocumentCreator dc = new DocumentCreator();
@@ -23,7 +39,10 @@ namespace LetterExample
 
             //Finally, we will create a report, based on our template and save it to a location.
             //I encourage you to explore other overloads of the function CreateDocument
-            dc.CreateDocument(@"../../Documents/letterTemplate.rtf", @"../../Documents/generatedLetter.rtf");                     
+
+            dc.CreateDocument(_inputPath,_outputPath);
+            if (!_unitTest)
+                Process.Start(_outputPath);
         }
 
 
@@ -50,7 +69,7 @@ namespace LetterExample
                 * In order to keep things simple we will add the date as string. I will introduce 
                 * formatting functions in future 
                 * articles. You can explore the examples inclued with the NTemplates downloads. */            
-            dc.AddString("date", DateTime.Today.ToShortDateString());
+            dc.AddString("date", _letterDate);
 
             dc.AddString("address", "secret for now, and will be revealed at the last moment");
 
@@ -62,7 +81,7 @@ namespace LetterExample
 
             dc.AddString("inviterUrl", "www.rocksolidlabs.com");
 
-            Image ourLogo = Image.FromFile(@"../../Documents/rocksolidlogo.JPG");
+            Image ourLogo = Image.FromFile(_logoPath);
             dc.AddImage("rocksolidlogo", ourLogo);
         }
     }
